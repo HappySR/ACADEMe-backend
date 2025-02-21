@@ -13,6 +13,9 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
+class UserUpdateClass(BaseModel):
+    new_class: str
+
 class TokenResponse(BaseModel):
     """Schema for JWT token response."""
     access_token: str

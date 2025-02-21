@@ -1,68 +1,51 @@
+import firebase_admin
 from firebase_admin import firestore
-from models.topic_model import TopicCreate, SubtopicCreate
-from fastapi import HTTPException
-import uuid
 from datetime import datetime
+from models.topic_model import TopicCreate, SubtopicCreate
 
-db = firestore.client()
+db = firestore.client()  # Firestore DB instance
 
 class TopicService:
     @staticmethod
-    def create_topic(topic: TopicCreate):
-        """Creates a topic (chapter) under a course."""
-        course_ref = db.collection("courses").document(topic.course_id)
-        if not course_ref.get().exists:
-            raise HTTPException(status_code=404, detail="Course not found")
-
-        topic_id = str(uuid.uuid4())
+    async def create_topic(course_id: str, topic_id: str, topic: TopicCreate):
+        """Creates a new topic inside a course."""
         topic_data = {
-            "id": topic_id,
+            "id": topic_id,  # ✅ Auto-generated topic ID
             "title": topic.title,
             "description": topic.description,
             "created_at": datetime.utcnow()
         }
-
-        course_ref.collection("topics").document(topic_id).set(topic_data)
-        return topic_data
-
-    @staticmethod
-    def get_all_topics(course_id: str):
-        """Fetches all topics under a specific course."""
-        course_ref = db.collection("courses").document(course_id)
-        if not course_ref.get().exists:
-            raise HTTPException(status_code=404, detail="Course not found")
-
-        topics_ref = course_ref.collection("topics").stream()
-        return [topic.to_dict() for topic in topics_ref]
+        db.collection("courses").document(course_id).collection("topics").document(topic_id).set(topic_data)
+        return {"message": "Topic created successfully", "topic_id": topic_id}
 
     @staticmethod
-    def create_subtopic(subtopic: SubtopicCreate):
-        """Creates a subtopic (topic under a chapter)."""
-        course_ref = db.collection("courses").document(subtopic.course_id)
-        topic_ref = course_ref.collection("topics").document(subtopic.topic_id)
+    async def get_all_topics(course_id: str):
+        """Fetches all topics for a course."""
+        topics_ref = db.collection("courses").document(course_id).collection("topics").stream()
+        return [{**topic.to_dict(), "id": topic.id} for topic in topics_ref]
 
-        if not topic_ref.get().exists:
-            raise HTTPException(status_code=404, detail="Topic not found")
+    @staticmethod
+    async def create_subtopic(topic_id: str, subtopic_id: str, subtopic: SubtopicCreate):
+        """Creates a new subtopic under a topic."""
+        topic_doc = db.collection_group("topics").where("id", "==", topic_id).get()
+        if not topic_doc:
+            return {"error": "Topic not found"}
 
-        subtopic_id = str(uuid.uuid4())
         subtopic_data = {
             "id": subtopic_id,
             "title": subtopic.title,
             "description": subtopic.description,
             "created_at": datetime.utcnow()
         }
-
-        topic_ref.collection("subtopics").document(subtopic_id).set(subtopic_data)
-        return subtopic_data
+        topic_doc[0].reference.collection("subtopics").document(subtopic_id).set(subtopic_data)
+        return {"message": "Subtopic created successfully", "subtopic_id": subtopic_id}
 
     @staticmethod
-    def get_subtopics_by_topic(course_id: str, topic_id: str):
+    async def get_subtopics_by_topic(topic_id: str):
         """Fetches all subtopics under a topic."""
-        course_ref = db.collection("courses").document(course_id)
-        topic_ref = course_ref.collection("topics").document(topic_id)
+        topic_doc = db.collection_group("topics").where("id", "==", topic_id).get()
+        if not topic_doc:
+            return {"error": "Topic not found"}
 
-        if not topic_ref.get().exists:
-            raise HTTPException(status_code=404, detail="Topic not found")
-
-        subtopics_ref = topic_ref.collection("subtopics").stream()
-        return [subtopic.to_dict() for subtopic in subtopics_ref]
+        subtopics_ref = topic_doc[0].reference.collection("subtopics").stream()
+        return [{**subtopic.to_dict(), "id": subtopic.id} for subtopic in subtopics_ref]

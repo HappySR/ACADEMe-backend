@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import Optional
 from datetime import datetime
 
 class TopicBase(BaseModel):
@@ -7,14 +7,11 @@ class TopicBase(BaseModel):
     description: Optional[str] = None
 
 class TopicCreate(TopicBase):
-    id: str
-    title: str
-    course_id: str
-    class_name: str
+    pass  # ✅ No need to repeat fields from TopicBase
 
 class TopicResponse(TopicBase):
     id: str
-    created_at: datetime
+    created_at: datetime  # ✅ Ensure created_at is included in responses
 
     class Config:
         from_attributes = True
@@ -22,18 +19,13 @@ class TopicResponse(TopicBase):
 class SubtopicBase(BaseModel):
     title: str
     description: Optional[str] = None
-    topic_id: str  # Reference to parent topic
 
 class SubtopicCreate(SubtopicBase):
-    id: str
-    title: str
-    topic_id: str
-    course_id: str
-    class_name: str
+    pass  # ✅ No need to pass `topic_id` in request body since it's in the URL
 
 class SubtopicResponse(SubtopicBase):
     id: str
-    created_at: datetime
+    created_at: datetime  # ✅ Ensure created_at is included in responses
 
     class Config:
         from_attributes = True

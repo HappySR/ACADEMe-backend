@@ -1,5 +1,5 @@
 from firebase_admin import auth, firestore
-from models.user_model import UserCreate, UserLogin
+from models.user_model import UserCreate, UserLogin, TokenResponse
 from utils.auth import create_jwt_token, verify_password, hash_password
 from fastapi import HTTPException
 import datetime
@@ -33,18 +33,15 @@ async def register_user(user: UserCreate):
             {"id": user_record.uid, "email": user.email, "student_class": user.student_class}
         )
 
-        response = {
-            "access_token": token,
-            "token_type": "bearer",
-            "expires_in": TOKEN_EXPIRY,  # 🔥 Fix: Return a valid integer
-            "created_at": datetime.datetime.utcnow().isoformat(),
-            "email": user.email,
-            "student_class": user.student_class,
-            "name": user.name
-        }
-
-        print("✅ Register User Response:", response)
-        return response
+        return TokenResponse(
+            access_token=token,
+            token_type="bearer",
+            expires_in=TOKEN_EXPIRY,  
+            created_at=datetime.datetime.utcnow().isoformat(),
+            email=user.email,
+            student_class=user.student_class,
+            name=user.name
+        )
 
     except auth.EmailAlreadyExistsError:
         raise HTTPException(status_code=400, detail="Email already exists")
@@ -60,7 +57,7 @@ async def login_user(user: UserLogin):
         if not user_docs:
             raise HTTPException(status_code=401, detail="Invalid credentials")
 
-        user_data = user_docs[0].to_dict()  # Get the first matching document
+        user_data = user_docs[0].to_dict()
 
         # ✅ Verify password correctly
         if not verify_password(user.password, user_data["password"]):
@@ -71,18 +68,15 @@ async def login_user(user: UserLogin):
             {"id": user_data["id"], "email": user.email, "student_class": user_data["student_class"]}
         )
 
-        response = {
-            "access_token": token,
-            "token_type": "bearer",
-            "expires_in": TOKEN_EXPIRY,  # 🔥 Fix: Return a valid integer
-            "created_at": datetime.datetime.utcnow().isoformat(),
-            "email": user.email,
-            "student_class": user_data["student_class"],
-            "name": user_data["name"]
-        }
-
-        print("✅ Login User Response:", response)
-        return response
+        return TokenResponse(
+            access_token=token,
+            token_type="bearer",
+            expires_in=TOKEN_EXPIRY,  
+            created_at=datetime.datetime.utcnow().isoformat(),
+            email=user.email,
+            student_class=user_data["student_class"],
+            name=user_data["name"]
+        )
 
     except HTTPException:
         raise

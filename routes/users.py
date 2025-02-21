@@ -1,9 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException
-from models.user_model import UserCreate, UserLogin, TokenResponse
+from models.user_model import UserCreate, UserLogin, TokenResponse, UserUpdateClass
 from services.auth_service import register_user, login_user
 from utils.auth import get_current_user
+from firebase_admin import firestore
 
-router = APIRouter(prefix="/auth", tags=["Authentication"])
+router = APIRouter(prefix="/users", tags=["Users & Authentication"])
+
+db = firestore.client()
 
 @router.post("/signup", response_model=TokenResponse)
 async def signup(user: UserCreate):
@@ -25,3 +28,18 @@ async def login(user: UserLogin):
 async def get_current_user_details(user: dict = Depends(get_current_user)):
     """Fetches the currently authenticated user's details."""
     return {"user": user}
+
+@router.patch("/update-class/", response_model=dict)
+async def update_user_class(update_data: UserUpdateClass, user: dict = Depends(get_current_user)):
+    """Updates the class of the logged-in user."""
+    user_id = user["id"]  # Get the logged-in user's ID
+    user_ref = db.collection("users").document(user_id)
+
+    # Check if user exists
+    if not user_ref.get().exists:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Update class field
+    user_ref.update({"student_class": update_data.new_class})
+
+    return {"message": "Class updated successfully", "new_class": update_data.new_class}
