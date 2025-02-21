@@ -2,9 +2,9 @@ from firebase_admin import firestore
 
 db = firestore.client()
 
-def filter_courses_by_class(courses: list, student_class: str):
-    """Filters courses based on the user's selected class."""
-    return [course for course in courses if course.get("class") == student_class]
+def filter_courses_by_class(courses, student_class):
+    """Filters courses based on the student's class."""
+    return [course for course in courses if course.class_name == student_class]
 
 def filter_quizzes_by_class(quizzes: list, student_class: str):
     """Filters quizzes based on the user's selected class."""

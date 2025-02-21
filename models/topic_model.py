@@ -7,7 +7,10 @@ class TopicBase(BaseModel):
     description: Optional[str] = None
 
 class TopicCreate(TopicBase):
-    pass
+    id: str
+    title: str
+    course_id: str
+    class_name: str
 
 class TopicResponse(TopicBase):
     id: str
@@ -22,7 +25,11 @@ class SubtopicBase(BaseModel):
     topic_id: str  # Reference to parent topic
 
 class SubtopicCreate(SubtopicBase):
-    pass
+    id: str
+    title: str
+    topic_id: str
+    course_id: str
+    class_name: str
 
 class SubtopicResponse(SubtopicBase):
     id: str
