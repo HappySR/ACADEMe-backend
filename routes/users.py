@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
-from models.user_model import UserCreate, UserLogin, UserResponse
+from models.user_model import UserCreate, UserLogin, TokenResponse
 from services.auth_service import register_user, login_user
 from utils.auth import get_current_user
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-@router.post("/signup", response_model=UserResponse)
+@router.post("/signup", response_model=TokenResponse)
 async def signup(user: UserCreate):
     """Registers a new user and returns an authentication token."""
     created_user = await register_user(user)  # Await the async function
@@ -13,7 +13,7 @@ async def signup(user: UserCreate):
         raise HTTPException(status_code=400, detail="User registration failed")
     return created_user
 
-@router.post("/login", response_model=UserResponse)
+@router.post("/login", response_model=TokenResponse)
 async def login(user: UserLogin):
     """Logs in an existing user and returns an authentication token."""
     logged_in_user = await login_user(user)  # Await the async function

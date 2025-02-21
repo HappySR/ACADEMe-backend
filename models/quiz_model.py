@@ -1,20 +1,21 @@
 from pydantic import BaseModel
-from typing import Optional
-from datetime import datetime
+from typing import Optional, List
 
-class QuizBase(BaseModel):
+class QuizCreate(BaseModel):
     title: str
     description: Optional[str] = None
-    subject: str  # Subject related to the quiz
-    total_marks: int  # Added total_marks for the quiz
+    subject: str
+    topic_id: Optional[str] = None  # Quiz can belong to either a topic or a subtopic
+    subtopic_id: Optional[str] = None  # If this is set, topic_id should be None
 
-class QuizCreate(QuizBase):
-    pass
-
-class QuizResponse(QuizBase):
+class QuizResponse(QuizCreate):
     id: str
-    created_at: datetime
-    updated_at: datetime  # Added updated_at field
 
-    class Config:
-        from_attributes = True
+class QuestionCreate(BaseModel):
+    question_text: str
+    options: List[str]
+    correct_answer: str
+
+class QuestionResponse(QuestionCreate):
+    id: str
+    quiz_id: str

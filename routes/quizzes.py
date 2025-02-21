@@ -1,21 +1,26 @@
-from fastapi import APIRouter, Depends, HTTPException
-from services.quiz_service import create_quiz, get_all_quizzes
-from models.quiz_model import QuizCreate, QuizResponse
-from utils.auth import get_current_user
-from utils.class_filter import filter_quizzes_by_class
+from fastapi import APIRouter, HTTPException
+from services.quiz_service import create_quiz, get_quizzes_by_topic, get_quizzes_by_subtopic, add_question_to_quiz, get_questions_by_quiz
+from models.quiz_model import QuizCreate, QuizResponse, QuestionCreate, QuestionResponse
+from typing import List
 
-router = APIRouter(prefix="/quizzes", tags=["Quizzes"])
+router = APIRouter()
 
-@router.post("/", response_model=QuizResponse)
-async def add_quiz(quiz: QuizCreate, user: dict = Depends(get_current_user)):
-    """Adds a new quiz (admin-only feature in the future)."""
-    created_quiz = create_quiz(quiz)
-    if not created_quiz:
-        raise HTTPException(status_code=400, detail="Quiz creation failed")
-    return created_quiz
+@router.post("/quizzes/", response_model=QuizResponse)
+async def add_quiz(quiz: QuizCreate):
+    return create_quiz(quiz)
 
-@router.get("/", response_model=list[QuizResponse])
-async def fetch_all_quizzes(user: dict = Depends(get_current_user)):
-    """Fetches all quizzes filtered by the user’s selected class."""
-    all_quizzes = get_all_quizzes()
-    return filter_quizzes_by_class(all_quizzes, user["class"])
+@router.get("/topics/{topic_id}/quizzes", response_model=List[QuizResponse])
+async def fetch_quizzes_by_topic(topic_id: str):
+    return get_quizzes_by_topic(topic_id)
+
+@router.get("/subtopics/{subtopic_id}/quizzes", response_model=List[QuizResponse])
+async def fetch_quizzes_by_subtopic(subtopic_id: str):
+    return get_quizzes_by_subtopic(subtopic_id)
+
+@router.post("/quizzes/{quiz_id}/questions", response_model=QuestionResponse)
+async def add_question(quiz_id: str, question: QuestionCreate):
+    return add_question_to_quiz(quiz_id, question)
+
+@router.get("/quizzes/{quiz_id}/questions", response_model=List[QuestionResponse])
+async def fetch_questions(quiz_id: str):
+    return get_questions_by_quiz(quiz_id)

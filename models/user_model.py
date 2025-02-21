@@ -13,20 +13,15 @@ class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
-class UserResponse(BaseModel):
-    """Schema for user response after successful login/registration."""
-    email: EmailStr
-    token: str
-    student_class: str  # ✅ Include class in the response
-    name: str
-
 class TokenResponse(BaseModel):
+    """Schema for JWT token response."""
     access_token: str
     token_type: str = "bearer"
-    expires_in: int  # Duration for which the token is valid (in seconds)
+    expires_in: int  # Token expiry duration in seconds
     created_at: datetime.datetime  # Timestamp of when the token was created
-    email: EmailStr  # Add email here if needed in the response
-    student_class: str  # Include class in the token response as well
+    email: EmailStr  # Include email in response
+    student_class: str  # Include class in response
+    name: str  # ✅ Fix missing name field
 
     class Config:
         arbitrary_types_allowed = True
