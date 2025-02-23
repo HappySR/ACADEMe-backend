@@ -3,15 +3,15 @@ from typing import Literal, Optional
 from datetime import datetime
 
 class MaterialCreate(BaseModel):
-    type: Literal["text", "image", "audio", "video", "link"]
-    category: Literal["Notes", "Reference Links", "Practice Questions"]
+    type: Literal["text", "document", "image", "audio", "video", "link"]
+    category: Literal["Notes", "Reference Links", "Practice Questions", "notes", "reference links", "practice questions"]
     content: str  # URL or text content
     optional_text: Optional[str] = None  # Description of the material
 
 class MaterialResponse(MaterialCreate):
     id: str
-    created_at: datetime
-    updated_at: datetime
+    created_at: str
+    updated_at: str
 
     class Config:
         from_attributes=True

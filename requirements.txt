@@ -9,3 +9,4 @@ pytest
 httpx
 pydantic[email]
 google-generativeai
+cloudinary

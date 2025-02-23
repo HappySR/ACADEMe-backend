@@ -10,7 +10,7 @@ class TopicService:
     async def create_topic(course_id: str, topic_id: str, topic: TopicCreate):
         """Creates a new topic inside a course."""
         topic_data = {
-            "id": topic_id,  # ✅ Auto-generated topic ID
+            "id": topic_id,
             "title": topic.title,
             "description": topic.description,
             "created_at": datetime.utcnow()
@@ -25,27 +25,35 @@ class TopicService:
         return [{**topic.to_dict(), "id": topic.id} for topic in topics_ref]
 
     @staticmethod
-    async def create_subtopic(topic_id: str, subtopic_id: str, subtopic: SubtopicCreate):
-        """Creates a new subtopic under a topic."""
-        topic_doc = db.collection_group("topics").where("id", "==", topic_id).get()
-        if not topic_doc:
-            return {"error": "Topic not found"}
+    async def create_subtopic(course_id: str, topic_id: str, subtopic_id: str, subtopic: SubtopicCreate):
+        """Creates a subtopic under a specific topic in Firestore."""
+        subtopic_data = subtopic.dict()  # Convert Pydantic model to dict
+        subtopic_data["id"] = subtopic_id
+        subtopic_data["created_at"] = datetime.utcnow()
+        subtopic_data["updated_at"] = datetime.utcnow()
 
-        subtopic_data = {
-            "id": subtopic_id,
-            "title": subtopic.title,
-            "description": subtopic.description,
-            "created_at": datetime.utcnow()
-        }
-        topic_doc[0].reference.collection("subtopics").document(subtopic_id).set(subtopic_data)
-        return {"message": "Subtopic created successfully", "subtopic_id": subtopic_id}
+        # ✅ Correct Firestore Path: courses/{course_id}/topics/{topic_id}/subtopics/{subtopic_id}
+        subtopics_ref = (
+            db.collection("courses")
+            .document(course_id)
+            .collection("topics")
+            .document(topic_id)
+            .collection("subtopics")
+            .document(subtopic_id)
+        )
+        subtopics_ref.set(subtopic_data)
+
+        return {"message": "Subtopic added successfully", "subtopic_id": subtopic_id}
 
     @staticmethod
-    async def get_subtopics_by_topic(topic_id: str):
+    async def get_subtopics_by_topic(course_id: str, topic_id: str):
         """Fetches all subtopics under a topic."""
-        topic_doc = db.collection_group("topics").where("id", "==", topic_id).get()
-        if not topic_doc:
-            return {"error": "Topic not found"}
-
-        subtopics_ref = topic_doc[0].reference.collection("subtopics").stream()
+        subtopics_ref = (
+            db.collection("courses")
+            .document(course_id)
+            .collection("topics")
+            .document(topic_id)
+            .collection("subtopics")
+            .stream()
+        )
         return [{**subtopic.to_dict(), "id": subtopic.id} for subtopic in subtopics_ref]

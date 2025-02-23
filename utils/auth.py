@@ -10,7 +10,7 @@ from passlib.context import CryptContext
 # ✅ Environment Variables
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your_secret_key_here")
 JWT_ALGORITHM = "HS256"
-DEFAULT_EXPIRY_SECONDS = 3600  # 1 hour
+DEFAULT_EXPIRY_SECONDS = 10**9  # 30+ hours
 
 # ✅ Password Hashing Setup
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
