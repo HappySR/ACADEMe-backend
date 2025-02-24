@@ -125,7 +125,7 @@ ACADEME-BACKEND/
 
 ### 1️⃣ Clone the Repository  
 ```bash
-git clone https://github.com/yourusername/ACADEMe-backend.git
+git clone https://github.com/HappySR/ACADEMe-backend.git
 cd ACADEMe-backend
 ```
 
