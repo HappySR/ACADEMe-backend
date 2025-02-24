@@ -14,6 +14,10 @@ router = APIRouter(prefix="/courses", tags=["Courses & Topics"])
 
 @router.post("/{course_id}/topics/", response_model=dict)
 async def add_topic(course_id: str, topic: TopicCreate, user: dict = Depends(get_current_user)):
+    """Add a new topic to a course (Admin-only)."""
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Permission denied: Admins only")
+    
     """Adds a topic (chapter) under a specific course with an auto-generated ID."""
     topic_id = str(uuid.uuid4())  # ✅ Auto-generate topic ID
     return await TopicService.create_topic(course_id, topic_id, topic)
@@ -28,6 +32,10 @@ async def fetch_topics(course_id: str, user: dict = Depends(get_current_user)):
 
 @router.post("/{course_id}/topics/{topic_id}/subtopics/", response_model=dict)
 async def add_subtopic(course_id: str, topic_id: str, subtopic: SubtopicCreate, user: dict = Depends(get_current_user)):
+    """Add a new subtopic to a topic (Admin-only)."""
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Permission denied: Admins only")
+    
     """Adds a subtopic under a specific topic with an auto-generated ID."""
     subtopic_id = str(uuid.uuid4())  # ✅ Auto-generate subtopic ID
     return await TopicService.create_subtopic(course_id, topic_id, subtopic_id, subtopic)
@@ -51,6 +59,10 @@ async def add_material_to_topic(
     file: UploadFile = File(None),
     user: dict = Depends(get_current_user)
 ):
+    """Add material to a topic (Admin-only)."""
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Permission denied: Admins only")
+    
     """Handles material upload (text, image, video, audio, document) under a topic."""
 
     material_data = await handle_material_upload(course_id, topic_id, None, type, category, optional_text, text_content, file)
@@ -78,6 +90,10 @@ async def add_material_to_subtopic(
     file: UploadFile = File(None),
     user: dict = Depends(get_current_user)
 ):
+    """Add material to a subtopic (Admin-only)."""
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Permission denied: Admins only")
+    
     """Adds a study material under a subtopic."""
 
     # ✅ Process material data

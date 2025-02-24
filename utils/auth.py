@@ -1,11 +1,17 @@
 import firebase_admin
-from firebase_admin import auth
+from firebase_admin import auth, firestore
 from fastapi import HTTPException, Depends, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 import jwt
 import os
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
+
+# ✅ Initialize Firebase Admin (Only if not initialized)
+if not firebase_admin._apps:
+    firebase_admin.initialize_app()
+
+db = firestore.client()  # ✅ Move this below Firebase initialization
 
 # ✅ Environment Variables
 JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "your_secret_key_here")
@@ -14,10 +20,6 @@ DEFAULT_EXPIRY_SECONDS = 10**9  # 30+ hours
 
 # ✅ Password Hashing Setup
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# ✅ Initialize Firebase Admin (Only if not initialized)
-if not firebase_admin._apps:
-    firebase_admin.initialize_app()
 
 security = HTTPBearer()
 
@@ -55,17 +57,30 @@ def verify_jwt_token(token: str):
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=401, detail="Invalid token")
 
-# ✅ Get Current User (Supports Both Firebase & JWT)
+# ✅ Get Current User (Supports Firebase, JWT & Admin Check)
 def get_current_user(credentials: HTTPAuthorizationCredentials = Security(security)):
-    """Extracts the current user from either Firebase token or JWT token."""
+    """Extracts the current user from either Firebase token or JWT token & checks admin status."""
     token = credentials.credentials
 
     try:
-        # 🔹 First, try verifying as a Firebase token
-        return verify_firebase_token(token)
+        # 🔹 Try verifying as a Firebase token
+        user = verify_firebase_token(token)
     except HTTPException:
-        # 🔹 If it fails, try verifying as a JWT token
-        return verify_jwt_token(token)
+        try:
+            # 🔹 If Firebase fails, try verifying as a JWT token
+            user = verify_jwt_token(token)
+        except HTTPException:
+            raise HTTPException(status_code=401, detail="Invalid authentication token")
+
+    email = user.get("email")
+    if not email:
+        raise HTTPException(status_code=401, detail="Email not found in token")
+
+    # 🔹 Check if the user is an admin in Firestore
+    admin_ref = db.collection("admins").document(email).get()
+    user["role"] = "admin" if admin_ref.exists else "student"
+
+    return user
 
 # ✅ Password Hashing
 def hash_password(password: str):

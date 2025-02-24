@@ -34,15 +34,15 @@ class CourseService:
         for doc in courses_ref:
             course_data = doc.to_dict()
 
-            # ✅ Ensure `created_at` and `updated_at` exist (fix missing fields)
-            if "created_at" not in course_data or "updated_at" not in course_data:
-                course_data["created_at"] = datetime.utcnow()
-                course_data["updated_at"] = datetime.utcnow()
-                db.collection("courses").document(doc.id).update({
-                    "created_at": course_data["created_at"],
-                    "updated_at": course_data["updated_at"],
-                })
+            # 🔍 Ensure all required fields exist before creating CourseResponse
+            required_fields = ["id", "title", "class_name", "description", "created_at", "updated_at"]
+            for field in required_fields:
+                if field not in course_data:
+                    raise HTTPException(
+                        status_code=500, 
+                        detail=f"Missing required field '{field}' in course document {doc.id}"
+                    )
 
-            courses.append(CourseResponse(**course_data))  # ✅ Ensure response matches model
+            courses.append(CourseResponse(**course_data))  # ✅ Now safe to convert
 
         return courses

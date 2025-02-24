@@ -8,7 +8,10 @@ router = APIRouter(prefix="/courses", tags=["Courses"])
 
 @router.post("/", response_model=CourseResponse)
 async def create_course(course: CourseCreate, user: dict = Depends(get_current_user)):
-    """Creates a new course (admin-only feature in the future)."""
+    """Creates a new course (Admin-only)."""
+    if user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Permission denied: Admins only")
+
     created_course = CourseService.create_course(course)  # ✅ Pass course model directly
 
     if not created_course:
