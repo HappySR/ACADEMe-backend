@@ -146,7 +146,7 @@ Create a `.env` file in the root directory:
 
 ```ini
 # Authentication Keys
-JWT_SECRET_KEY=your_jwt_secret_key 
+JWT_SECRET_KEY=your_jwt_secret_key # You can generate it by running secret_key_generation.py which is under generate_secret_keys folder
 
 # Firebase
 FIREBASE_CRED_PATH=/path/to/firebase/credentials.json
@@ -160,7 +160,37 @@ CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 ```
 
-### 5️⃣ Start the Server  
+### 5️⃣ Set Up Firebase Credentials: You need to ensure that you are using Firebase's service account credentials, not just Google Cloud's default credentials.
+
+1. Download your Firebase Admin SDK credentials (JSON file) from the Firebase Console:
+2. Go to the Firebase Console.
+3. Select your project.
+4. Navigate to Project Settings > Service Accounts.
+5. Under Firebase Admin SDK, click Generate New Private Key.
+This will download a JSON file with your service account credentials.
+Set the GOOGLE_APPLICATION_CREDENTIALS Environment Variable: Set the environment variable to point to the downloaded Firebase service account credentials file:
+
+```bash
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your/service-account-file.json"
+```
+Replace /path/to/your/service-account-file.json with the actual path to the Firebase JSON key file you downloaded.
+
+#### You can make this change permanent by adding the export statement to your shell profile:
+
+##### For bash: Add it to ~/.bashrc:
+
+```bash
+echo 'export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your/service-account-file.json"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+##### For zsh: Add it to ~/.zshrc:
+```bash
+echo 'export GOOGLE_APPLICATION_CREDENTIALS="/path/to/your/service-account-file.json"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+### 6️⃣ Start the Server  
 ```bash
 uvicorn main:app --host 127.0.0.1 --port 8001 --reload
 ```

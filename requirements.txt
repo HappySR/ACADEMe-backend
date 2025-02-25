@@ -10,3 +10,4 @@ httpx
 pydantic[email]
 google-generativeai
 cloudinary
+python-multipart
