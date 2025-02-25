@@ -162,7 +162,7 @@ CLOUDINARY_API_SECRET=your_api_secret
 
 ### 5️⃣ Start the Server  
 ```bash
-uvicorn app.main:app --reload
+uvicorn main:app --host 127.0.0.1 --port 8001 --reload
 ```
 Your API will be available at **http://127.0.0.1:8001**  
 
