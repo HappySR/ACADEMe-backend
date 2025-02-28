@@ -74,7 +74,6 @@ ACADEME-BACKEND/
 │   ├── __pycache__/
 │   ├── __init__.py
 │   ├── ai_analytics.py
-│   ├── auth.py
 │   ├── courses.py
 │   ├── discussions.py
 │   ├── material_routes.py
@@ -92,24 +91,12 @@ ACADEME-BACKEND/
 │   ├── progress_service.py
 │   ├── quiz_service.py
 │   ├── topic_service.py
-│   ├── user_service.py
-│── tests/
-│   ├── test_ai.py
-│   ├── test_auth.py
-│   ├── test_courses.py
-│   ├── test_discussions.py
-│   ├── test_progress.py
-│   ├── test_questions.py
-│   ├── test_quizzes.py
-│   ├── test_topics.py
-│   ├── test_users.py
 │── utils/
 │   ├── __pycache__/
 │   ├── auth.py
 │   ├── class_filter.py
 │   ├── cloudinary_service.py
 │   ├── firestore_helpers.py
-│   ├── validators.py
 │── venv/
 │── .env
 │── .gitignore
